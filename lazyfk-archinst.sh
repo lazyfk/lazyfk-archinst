@@ -150,7 +150,7 @@ start_services(){
 }
 
 echo "installing arch yay"
-echo "Please confirm that you know what this script does (y/n)"
+echo "Please confirm that you know what this script do (y/n)"
 read prompt
 if [ "$prompt" != "${prompt#[Yy]}" ]; then
 	check_connection
