@@ -105,9 +105,13 @@ set_locale(){
 	clear
 	echo "setting up locale"
 	arch-chroot /mnt sed -i "s/#$locale/$locale/g" /etc/locale.gen
+	arch-chroot /mnt sed -i "S/#en_US.UTF-8/en_US.UTF-8/g" /etc/locale.gen
 	arch-chroot /mnt locale-gen
 	echo "LANG=$locale" > /mnt/etc/locale.conf
 	export LANG="$locale"
+	echo "KEYMAP=$keyboard" > /mnt/etc/vconsole.conf
+	echo "FONT=lat2-16" >> /mnt/etc/vconsole.conf
+	echo "FONT_MAP=8859-2" >> /mnt/etc/vconsole.conf
 }
 set_hostname(){
 	echo "please provide an hostname: "; read namevar
