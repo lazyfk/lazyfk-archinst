@@ -137,7 +137,7 @@ create_user(){
 install_grub(){
 	clear
 	echo "installing grub"
-	arch-chroot /mnt pacman -S grub os-prober efibootmgr
+	arch-chroot /mnt pacman -S grub os-prober efibootmgr --noconfirm
 	arch-chroot /mnt grub-install /dev/"$device" --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi
 	arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 }
