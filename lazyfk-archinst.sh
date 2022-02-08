@@ -82,6 +82,7 @@ part_disk(){
 	mkfs.ext4 "$sel_dev"4
 
 	mount "$sel_dev"3 /mnt
+	mkdir /mnt/boot
 	mkdir /mnt/boot/efi
 	mount "$sel_dev"1 /mnt/boot/efi
 	mkdir /mnt/home
@@ -126,7 +127,7 @@ create_user(){
 	echo "provide username: "; read user
 	arch-chroot /mnt useradd -mG wheel "$user"
 	arch-chroot /mnt sed -i 's/# %wheel/%wheel/g' /etc/sudoers
-	arch-chroot /mnt sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL' /etc/sudoers
+	arch-chroot /mnt sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/g' /etc/sudoers
 	echo "provide password for $user"
 	arch-chroot /mnt passwd "$user"
 }
