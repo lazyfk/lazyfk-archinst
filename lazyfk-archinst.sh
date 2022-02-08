@@ -130,7 +130,7 @@ create_user(){
 	arch-chroot /mnt useradd -mG wheel "$user"
 	arch-chroot /mnt sed -i 's/# %wheel/%wheel/g' /etc/sudoers
 	arch-chroot /mnt sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/g' /etc/sudoers
-	arch-chroot /mnt sed -i 's/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# %wheel ALL=(ALL:ALL NOPASSWD: ALL/g)' /etc/sudoers
+	arch-chroot /mnt sed -i 's/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/g' /etc/sudoers
 	echo "provide password for $user"
 	arch-chroot /mnt passwd "$user"
 }
