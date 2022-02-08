@@ -69,6 +69,7 @@ part_disk(){
 
 	device=$1;sel_dev="/dev/$device"
 	echo "wiping any existing partitions on selected disk and etc."
+	wipefs -af "$sel_dev"
 	sgdisk -Z "$sel_dev"
 	sgdisk -n 1::+"$boot_size" -t 1:ef00 -c 1:EFI "$sel_dev"
 	sgdisk -n 2::+"$swap_size" -t 2:8200 -c 2:SWAP "$sel_dev"
