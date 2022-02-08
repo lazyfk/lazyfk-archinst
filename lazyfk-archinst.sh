@@ -146,19 +146,23 @@ start_services(){
 }
 
 echo "installing arch yay"
-
-check_connection
-set_kb
-time_set
-select_disk
-microcode
-bare_minimum
-create_fstab
-set_timezone
-set_locale
-set_hostname
-set_pass
-create_user
-install_grub
-start_services
-
+echo "Please confirm that you know what this script does (y/n)"
+read prompt
+if [ "$prompt" != "${prompt#[Yy]}" ]; then
+	check_connection
+	set_kb
+	time_set
+	select_disk
+	microcode
+	bare_minimum
+	create_fstab
+	set_timezone
+	set_locale
+	set_hostname
+	set_pass
+	create_user
+	install_grub
+	start_services
+else
+	exit 0
+fi
