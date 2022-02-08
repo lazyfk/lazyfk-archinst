@@ -63,6 +63,7 @@ select_disk(){
 		part_disk "$device"
 	else
 		echo "MBR will be done at later date"
+		exit 0
 	fi
 }
 part_disk(){
