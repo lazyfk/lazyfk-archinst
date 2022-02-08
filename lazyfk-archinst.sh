@@ -28,7 +28,7 @@ no_net(){
 }
 microcode(){
 	cpu=$(grep vendor_id /proc/cpuinfo)
-	if [[$cpu == *"GenuineIntel"* ]];then
+	if [[ $cpu == *"GenuineIntel"* ]];then
 		micro="intel-ucode"
 	else
 		micro="amd-ucode"
@@ -106,6 +106,7 @@ set_locale(){
 	arch-chroot /mnt sed -i "s/#$locale/$locale/g" /etc/locale.gen
 	arch-chroot /mnt locale-gen
 	echo "LANG=$locale" > /mnt/etc/locale.conf
+	export LANG="$locale"
 }
 set_hostname(){
 	echo "please provide an hostname: "; read namevar
