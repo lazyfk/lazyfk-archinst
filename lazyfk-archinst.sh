@@ -75,7 +75,7 @@ part_disk(){
 	sgdisk -n 1::+"$boot_size" -t 1:ef00 -c 1:EFI "$sel_dev"
 	sgdisk -n 2::+"$swap_size" -t 2:8200 -c 2:SWAP "$sel_dev"
 	sgdisk -n 3::+"$root_size" -t 3:8300 -c 3:ROOT "$sel_dev"
-	Sgdisk -n 4 -c 4:HOME "$sel_dev"
+	sgdisk -n 4 -c 4:HOME "$sel_dev"
 	
 	mkfs.fat -F32 "$sel_dev"1
 	mkswap "$sel_dev"2
@@ -94,7 +94,7 @@ bare_minimum(){
 	pacstrap /mnt base base-devel linux $micro linux-headers linux-firmware vim networkmanager man-db sudo 
 }
 create_fstab(){
-	gefstab -U /mnt >> /mnt/etc/fstab
+	genfstab -U /mnt >> /mnt/etc/fstab
 }
 set_timezone(){
 	clear
