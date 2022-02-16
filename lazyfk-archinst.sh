@@ -76,7 +76,8 @@ part_disk(){
 	sgdisk -n 2::+"$swap_size" -t 2:8200 -c 2:SWAP "$sel_dev"
 	sgdisk -n 3::+"$root_size" -t 3:8300 -c 3:ROOT "$sel_dev"
 	sgdisk -n 4 -c 4:HOME "$sel_dev"
-	
+
+	# swap below to include ssd,use lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1" to catch partition names
 	mkfs.fat -F32 "$sel_dev"1
 	mkswap "$sel_dev"2
 	swapon "$sel_dev"2
