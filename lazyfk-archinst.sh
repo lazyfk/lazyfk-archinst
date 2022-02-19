@@ -78,21 +78,21 @@ part_disk(){
 	sgdisk -n 4 -c 4:HOME "$sel_dev"
 
 	# swap below to include ssd,use lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1" to catch partition names
-	bootpart=$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?1")
-	swappart=$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?2")
-	rootpart=$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?3")
-	homepart=$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?4")
-	mkfs.fat -F32 "/dev/$bootpart"
-	mkswap "/dev/$swappart"
-	swapon "/dev/$swappart"
-	mkfs.ext4 "/dev/$rootpart"
-	mkfs.ext4 "/dev/$homepart"
+	bootpart="/dev/$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?1")"
+	swappart="/dev/$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?2")"
+	rootpart="/dev/$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?3")"
+	homepart="/dev/$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?4")"
+	mkfs.fat -F32 "$bootpart"
+	mkswap "$swappart"
+	swapon "$swappart"
+	mkfs.ext4 "$rootpart"
+	mkfs.ext4 "$homepart"
 
-	mount "/dev/$rootpart" /mnt
+	mount "$rootpart" /mnt
 	mkdir -p /mnt/boot/efi
-	mount "/dev/$bootpart" /mnt/boot/efi
+	mount "$bootpart" /mnt/boot/efi
 	mkdir /mnt/home
-	mount "/dev/$homepart" /mnt/home
+	mount "$homepart" /mnt/home
 }
 bare_minimum(){
 	pacstrap /mnt base base-devel linux $micro linux-headers linux-firmware vim networkmanager man-db 
@@ -110,7 +110,7 @@ set_locale(){
 	clear
 	echo "setting up locale"
 	arch-chroot /mnt sed -i "s/#$locale/$locale/g" /etc/locale.gen
-	arch-chroot /mnt sed -i "S/#en_US.UTF-8/en_US.UTF-8/g" /etc/locale.gen
+	arch-chroot /mnt sed -i "s/#en_US.UTF-8/en_US.UTF-8/g" /etc/locale.gen
 	arch-chroot /mnt locale-gen
 	echo "LANG=$locale" > /mnt/etc/locale.conf
 	export LANG="$locale"
