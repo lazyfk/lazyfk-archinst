@@ -40,7 +40,7 @@ check_connection(){
 	clear
 	echo " checking connection"
 	if $(ping -c 3 archlinux.org &>/dev/null);then 
-		echo "yup there is an internet connection" && sleep 5
+		echo "yup there is an internet connection"
 	else
 		no_net
 	fi
@@ -50,7 +50,6 @@ time_set(){
 	timedatectl set-ntp true
 	"setting up time service"
 	timedatectl status
-	sleep 4
 }
 select_disk(){
 	clear
@@ -70,6 +69,7 @@ part_disk(){
 
 	device=$1;sel_dev="/dev/$device"
 	echo "wiping any existing partitions on selected disk and etc."
+	dd if=/dev/zero of=/dev/"$device" bs=512 count=1
 	wipefs -af "$sel_dev"
 	sgdisk -Z "$sel_dev"
 	sgdisk -n 1::+"$boot_size" -t 1:ef00 -c 1:EFI "$sel_dev"
@@ -78,11 +78,11 @@ part_disk(){
 	sgdisk -n 4 -c 4:HOME "$sel_dev"
 
 	# swap below to include ssd,use lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1" to catch partition names
-	bootpart="/dev/$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?1")"
-	swappart="/dev/$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?2")"
-	rootpart="/dev/$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?3")"
-	homepart="/dev/$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?4")"
-	mkfs.fat -F32 "$bootpart"
+	bootpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1")"
+	swappart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?2")"
+	rootpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?3")"
+	homepart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?4")"
+	mkfs.fat -F32 "$bootpart"swappart="/dev/$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?2")"
 	mkswap "$swappart"
 	swapon "$swappart"
 	mkfs.ext4 "$rootpart"
