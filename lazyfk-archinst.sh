@@ -78,21 +78,24 @@ part_disk(){
 	sgdisk -n 4 -c 4:HOME "$sel_dev"
 
 	# swap below to include ssd,use lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1" to catch partition names
-	mkfs.fat -F32 "$sel_dev"1
-	mkswap "$sel_dev"2
-	swapon "$sel_dev"2
-	mkfs.ext4 "$sel_dev"3
-	mkfs.ext4 "$sel_dev"4
+	bootpart=$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?1")
+	swappart=$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?2")
+	rootpart=$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?3")
+	homepart=$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?4")
+	mkfs.fat -F32 "/dev/$bootpart"
+	mkswap "/dev/$swappart"
+	swapon "/dev/$swappart"
+	mkfs.ext4 "/dev/$rootpart"
+	mkfs.ext4 "/dev/$homepart"
 
-	mount "$sel_dev"3 /mnt
-	mkdir /mnt/boot
-	mkdir /mnt/boot/efi
-	mount "$sel_dev"1 /mnt/boot/efi
+	mount "/dev/$rootpart" /mnt
+	mkdir -p /mnt/boot/efi
+	mount "/dev/$bootpart" /mnt/boot/efi
 	mkdir /mnt/home
-	mount "$sel_dev"4 /mnt/home
+	mount "/dev/$homepart" /mnt/home
 }
 bare_minimum(){
-	pacstrap /mnt base base-devel linux $micro linux-headers linux-firmware vim networkmanager man-db sudo 
+	pacstrap /mnt base base-devel linux $micro linux-headers linux-firmware vim networkmanager man-db 
 }
 create_fstab(){
 	genfstab -U /mnt >> /mnt/etc/fstab
