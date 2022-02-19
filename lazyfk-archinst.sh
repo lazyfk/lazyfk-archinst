@@ -82,7 +82,7 @@ part_disk(){
 	swappart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?2")"
 	rootpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?3")"
 	homepart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?4")"
-	mkfs.fat -F32 "$bootpart"swappart="/dev/$(lsblk -o NAME -r "sel_dev" | grep -E ""$device"p?2")"
+	mkfs.fat -F32 "$bootpart"
 	mkswap "$swappart"
 	swapon "$swappart"
 	mkfs.ext4 "$rootpart"
