@@ -75,12 +75,12 @@ part_disk(){
 	sgdisk -n 1::+"$boot_size" -t 1:ef00 -c 1:EFI "$sel_dev"
 	sgdisk -n 2 -t 2:8e00 -c 2:LVM "$sel_dev"
 	bootpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1")"
-	pvpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?2)"
+	pvpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?2")"
 	echo "encrypting lvm partition"
 	cryptsetup -y -v --use-random luksFormat "$pvpart"
 	echo "provide name of this partition"
 	read crname
-	"opening encrypted partition"
+	echo "opening encrypted partition"
 	cryptsetup luksOpen "$pvpart" "$crname"
 	pvcreate /dev/mapper/"$crname"
 	vgcreate vg0 /dev/mapper/"$crname"
@@ -112,7 +112,7 @@ set_timezone(){
 	arch-chroot /mnt hwclock --systohc	
 }
 set_hooks(){
-	arch-chroot /mnt sed -i "s/HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)/HOOKS=(base udev systemd autodetect keyboard keymap modconf block sd-encrypt lvm2 filesystems fsck)/g" /etc/mkinitcpio.conf
+	arch-chroot /mnt sed -i "s/HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)/HOOKS=(base systemd autodetect keyboard sd-vconsole modconf block sd-encrypt lvm2 filesystems fsck)/g" /etc/mkinitcpio.conf
 	arch-chroot /mnt mkinitcpio -p linux
 }
 set_locale(){
@@ -164,9 +164,8 @@ install_bootloader(){
 	linux	/vmlinuz-linux
 	initrd	/$micro.img
 	initrd	/initramfs-linux.img
-	options	rd.luks.name=UUID=$lvmuuid:$crname root=/dev/vg0/root rw
+	options	rd.luks.name=$lvmuuid=$crname root=/dev/vg0/root rw
 EOF
-	arch-chroot rm -f /mnt/boot/loader/loader.conf
 	touch /mnt/boot/loader/loader.conf
 	cat > /mnt/boot/loader/loader.conf <<EOF
 	default arch
