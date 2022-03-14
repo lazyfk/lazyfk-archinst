@@ -157,7 +157,7 @@ install_bootloader(){
 	echo "installing bootloader"
 	arch-chroot /mnt pacman -S os-prober efibootmgr --noconfirm
 	arch-chroot /mnt bootctl --path=/boot install
-	lvmuuid="$(lsblk -f -o UUID -r "$pvpart" | grep -v UUID)"
+	lvmuuid="$(blkid -s UUID -o value "$pvpart")"
 	touch /mnt/boot/loader/entries/arch.conf
 	cat > /mnt/boot/loader/entries/arch.conf <<EOF
 	title	Arch Linux
