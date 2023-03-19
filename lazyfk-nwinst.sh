@@ -39,7 +39,7 @@ select_disk(){
     clear
     echo "listing aviable devices"
     lsblk | grep disk
-    read dev
+    read device
     if $(efi_boot);
     then
         part_disk "$device"
@@ -163,8 +163,8 @@ part_disk(){
              sgdisk -n 2 -t 2:8300 -c 2:BTRFS "$sel_dev"
              bootpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1")"
              pvpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?2")"
-             mkfs.btrfs /dev/"$pvpart"
-             mount /dev/"$pvpart" /mnt
+             mkfs.btrfs "$pvpart"
+             mount "$pvpart" /mnt
              btrfs sub create /mnt/@
              btrfs sub create /mnt/@home
              btrfs sub create /mnt/@swap
@@ -172,12 +172,12 @@ part_disk(){
              btrfs sub create /mnt/@var/log
              btrfs filesystem mkswapfile -s "$swap_size" /mnt/swap
              umount /mnt
-             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@ /dev/"$pvpart" /mnt
+             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@ "$pvpart" /mnt
              mkdir -p /mnt/{home,var/cache,var/log}
-             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@home /dev/"$pvpart" /mnt/home
-             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@cache /dev/"$pvpart" /mnt/var/cache
-             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@log /dev/"$pvpart" /mnt/var/log
-             mount -o defaults,noatime 0 0 subvol=@swap /dev/mapper/"$pvpart" /mnt/swap
+             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@home "$pvpart" /mnt/home
+             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@cache "$pvpart" /mnt/var/cache
+             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@log "$pvpart" /mnt/var/log
+             mount -o defaults,noatime 0 0 subvol=@swap "$pvpart" /mnt/swap
              swapon /mnt/swap
              mkfs.fat -F32 "$bootpart"
              mkdir /mnt/efi
