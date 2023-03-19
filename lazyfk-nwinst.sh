@@ -49,7 +49,7 @@ select_disk(){
     fi
 }
 part_disk(){
-    sel_dev="/dev/$device"
+    device=$1;sel_dev="/dev/$device"
     echo "btrfs or ext4?"
     select fssel in ext4 btrfs;do
         case $fssel in
@@ -72,122 +72,117 @@ part_disk(){
     read prompt
     if [ "$prompt" != "${prompt#[Yy]}" ]; then
       if [ "$fs" == "ext4" ]; then
-	    echo "wiping any existing partitions on selected disk and etc."
-	    dd if=/dev/zero of=/dev/"$device" bs=512 count=1
-	    sgdisk -n 1::+"$boot_size" -t 1:ef00 -c 1:EFI "$sel_dev"
-	    sgdisk -n 2 -t 2:8e00 -c 2:LVM "$sel_dev"
-	    bootpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1")"
-	    pvpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?2")"
-	    echo "encrypting lvm partition"
-	    cryptsetup -y -v --use-random luksFormat "$pvpart"
-	    echo "provide name of this partition"
-	    read encname
-	    echo "opening encrypted partition"
-	    cryptsetup luksOpen "$pvpart" "$encname"
-	    pvcreate /dev/mapper/"$encname"
-	    vgcreate vg0 /dev/mapper/"$encname"
-	    lvcreate -L "$swap_size" vg0 -n swap
-	    lvcreate -L "$root_size" vg0 -n root
-	    lvcreate -l 100%FREE vg0 -n home
-	    mkfs.fat -F32 "$bootpart"
-	    mkswap /dev/vg0/swap
-	    swapon /dev/vg0/swap
-	    mkfs.ext4 /dev/vg0/root
-	    mkfs.ext4 /dev/vg0/home
-
-	    mount /dev/vg0/root /mnt
-	    mkdir /mnt/efi
-	    mount "$bootpart" /mnt/efi
-	    mkdir /mnt/home
-	    mount /dev/vg0/home /mnt/home
+          echo "wiping any existing partitions on selected disk and etc."
+          dd if=/dev/zero of=/dev/"$device" bs=512 count=1
+          sgdisk -n 1::+"$boot_size" -t 1:ef00 -c 1:EFI "$sel_dev"
+          sgdisk -n 2 -t 2:8e00 -c 2:LVM "$sel_dev"
+          bootpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1")"
+          pvpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?2")"
+          echo "encrypting lvm partition"
+          cryptsetup -y -v --use-random luksFormat "$pvpart"
+          echo "provide name of this partition"
+          read encname
+          echo "opening encrypted partition"
+          cryptsetup luksOpen "$pvpart" "$encname"
+          pvcreate /dev/mapper/"$encname"
+          vgcreate vg0 /dev/mapper/"$encname"
+          lvcreate -L "$swap_size" vg0 -n swap
+          lvcreate -L "$root_size" vg0 -n root
+          lvcreate -l 100%FREE vg0 -n home
+          mkfs.fat -F32 "$bootpart"
+          mkswap /dev/vg0/swap
+          swapon /dev/vg0/swap
+          mkfs.ext4 /dev/vg0/root
+          mkfs.ext4 /dev/vg0/home
+          mount /dev/vg0/root /mnt
+          mkdir /mnt/efi
+          mount "$bootpart" /mnt/efi
+          mkdir /mnt/home
+          mount /dev/vg0/home /mnt/home
       else
-        echo "wiping any existing partitions on selected disk and etc."
-	    dd if=/dev/zero of=/dev/"$device" bs=512 count=1
-	    sgdisk -n 1::+"$boot_size" -t 1:ef00 -c 1:EFI "$sel_dev"
-	    sgdisk -n 2 -t 2:8300 -c 2:BTRFS "$sel_dev"
-	    bootpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1")"
-	    pvpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?2")"
-	    echo "encrypting BTRFS partition"
-	    cryptsetup -y -v --use-random luksFormat "$pvpart"
-	    echo "provide name of this partition"
-	    read encname
-	    echo "opening encrypted partition"
-	    cryptsetup luksOpen "$pvpart" "$encname"
-        mkfs.btrfs /dev/mapper/"$encname"
-        mount /dev/mapper/"$encname" /mnt
-        btrfs sub create /mnt/@
-        btrfs sub create /mnt/@home
-        btrfs sub create /mnt/@swap
-        btrfs sub create /mnt/@var/cache
-        btrfs sub create /mnt/@var/log
-        btrfs filesystem mkswapfile -s "$swap_size" /mnt/swap
-        umount /mnt
-        mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@ /dev/mapper/"$encname" /mnt
-        mkdir -p /mnt/{home,var/cache,var/log}
-        mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@home /dev/mapper/"$encname" /mnt/home
-        mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@cache /dev/mapper/"$encname" /mnt/var/cache
-        mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@log /dev/mapper/"$encname" /mnt/var/log
-        mount -o defaults,noatime 0 0 subvol=@swap /dev/mapper/"$encname" /mnt/swap
-        swapon /mnt/swap
-	    mkfs.fat -F32 "$bootpart"
-	    mkdir /mnt/efi
-	    mount "$bootpart" /mnt/efi
-      fi
-    else
-      if [ "$fs" == "ext4" ]; then
-        sel_dev="/dev/$device"
-	    echo "wiping any existing partitions on selected disk and etc."
-	    dd if=/dev/zero of=/dev/"$device" bs=512 count=1
-	    sgdisk -n 1::+"$boot_size" -t 1:ef00 -c 1:EFI "$sel_dev"
-	    sgdisk -n 2::+"$swap_size" -t 2:8200 -c 2:SWAP "$sel_dev"
-	    sgdisk -n 3::+"$root_size" -t 3:8300 -c 3:ROOT "$sel_dev"
-	    sgdisk -n 4 -c 4:HOME "$sel_dev"
-
-	    # swap below to include ssd,use lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1" to catch partition names
-	    bootpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1")"
-	    swappart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?2")"
-	    rootpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?3")"
-	    homepart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?4")"
-	    mkfs.fat -F32 "$bootpart"
-	    mkswap "$swappart"
-	    swapon "$swappart"
-	    mkfs.ext4 "$rootpart"
-	    mkfs.ext4 "$homepart"
-
-	    mount "$rootpart" /mnt
-	    mkdir -p /mnt/efi
-	    mount "$bootpart" /mnt/efi
-	    mkdir /mnt/home
-	    mount "$homepart" /mnt/home
-      else
-         echo "wiping any existing partitions on selected disk and etc."
-	    dd if=/dev/zero of=/dev/"$device" bs=512 count=1
-	    sgdisk -n 1::+"$boot_size" -t 1:ef00 -c 1:EFI "$sel_dev"
-	    sgdisk -n 2 -t 2:8300 -c 2:BTRFS "$sel_dev"
-	    bootpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1")"
-	    pvpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?2")"
-	    echo "provide name of this partition"
-	    read encname
-        mkfs.btrfs /dev/mapper/"$encname"
-        mount /dev/mapper/"$encname" /mnt
-        btrfs sub create /mnt/@
-        btrfs sub create /mnt/@home
-        btrfs sub create /mnt/@swap
-        btrfs sub create /mnt/@var/cache
-        btrfs sub create /mnt/@var/log
-        btrfs filesystem mkswapfile -s "$swap_size" /mnt/swap
-        umount /mnt
-        mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@ /dev/mapper/"$encname" /mnt
-        mkdir -p /mnt/{home,var/cache,var/log}
-        mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@home /dev/mapper/"$encname" /mnt/home
-        mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@cache /dev/mapper/"$encname" /mnt/var/cache
-        mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@log /dev/mapper/"$encname" /mnt/var/log
-        mount -o defaults,noatime 0 0 subvol=@swap /dev/mapper/"$encname" /mnt/swap
-        swapon /mnt/swap
-	    mkfs.fat -F32 "$bootpart"
-	    mkdir /mnt/efi
-	    mount "$bootpart" /mnt/efi
-      fi
+          echo "wiping any existing partitions on selected disk and etc."
+          dd if=/dev/zero of=/dev/"$device" bs=512 count=1
+          sgdisk -n 1::+"$boot_size" -t 1:ef00 -c 1:EFI "$sel_dev"
+          sgdisk -n 2 -t 2:8300 -c 2:BTRFS "$sel_dev"
+          bootpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1")"
+          pvpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?2")"
+          echo "encrypting BTRFS partition"
+          cryptsetup -y -v --use-random luksFormat "$pvpart"
+          echo "provide name of this partition"
+          read encname
+          echo "opening encrypted partition"
+          cryptsetup luksOpen "$pvpart" "$encname"
+          mkfs.btrfs /dev/mapper/"$encname"
+          mount /dev/mapper/"$encname" /mnt
+          btrfs sub create /mnt/@
+          btrfs sub create /mnt/@home
+          btrfs sub create /mnt/@swap
+          btrfs sub create /mnt/@var/cache
+          btrfs sub create /mnt/@var/log
+          btrfs filesystem mkswapfile -s "$swap_size" /mnt/swap
+          umount /mnt
+          mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@ /dev/mapper/"$encname" /mnt
+          mkdir -p /mnt/{home,var/cache,var/log}
+          mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@home /dev/mapper/"$encname" /mnt/home
+          mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@cache /dev/mapper/"$encname" /mnt/var/cache
+          mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@log /dev/mapper/"$encname" /mnt/var/log
+          mount -o defaults,noatime 0 0 subvol=@swap /dev/mapper/"$encname" /mnt/swap
+          swapon /mnt/swap
+          mkfs.fat -F32 "$bootpart"
+          mkdir /mnt/efi
+          mount "$bootpart" /mnt/efi
+         fi
+     else
+         if [ "$fs" == "ext4" ]; then
+             sel_dev="/dev/$device"
+             echo "wiping any existing partitions on selected disk and etc."
+             dd if=/dev/zero of=/dev/"$device" bs=512 count=1
+             sgdisk -n 1::+"$boot_size" -t 1:ef00 -c 1:EFI "$sel_dev"
+             sgdisk -n 2::+"$swap_size" -t 2:8200 -c 2:SWAP "$sel_dev"
+             sgdisk -n 3::+"$root_size" -t 3:8300 -c 3:ROOT "$sel_dev"
+             sgdisk -n 4 -c 4:HOME "$sel_dev"
+             # swap below to include ssd,use lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1" to catch partition names
+             bootpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1")"
+             swappart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?2")"
+             rootpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?3")"
+             homepart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?4")"
+             mkfs.fat -F32 "$bootpart"
+             mkswap "$swappart"
+             swapon "$swappart"
+             mkfs.ext4 "$rootpart"
+             mkfs.ext4 "$homepart"
+             mount "$rootpart" /mnt
+             mkdir -p /mnt/efi
+             mount "$bootpart" /mnt/efi
+             mkdir /mnt/home
+             mount "$homepart" /mnt/home
+         else
+             echo "wiping any existing partitions on selected disk and etc."
+             dd if=/dev/zero of=/dev/"$device" bs=512 count=1
+             sgdisk -n 1::+"$boot_size" -t 1:ef00 -c 1:EFI "$sel_dev"
+             sgdisk -n 2 -t 2:8300 -c 2:BTRFS "$sel_dev"
+             bootpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?1")"
+             pvpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?2")"
+             mkfs.btrfs /dev/"$pvpart"
+             mount /dev/"$pvpart" /mnt
+             btrfs sub create /mnt/@
+             btrfs sub create /mnt/@home
+             btrfs sub create /mnt/@swap
+             btrfs sub create /mnt/@var/cache
+             btrfs sub create /mnt/@var/log
+             btrfs filesystem mkswapfile -s "$swap_size" /mnt/swap
+             umount /mnt
+             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@ /dev/"$pvpart" /mnt
+             mkdir -p /mnt/{home,var/cache,var/log}
+             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@home /dev/"$pvpart" /mnt/home
+             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@cache /dev/"$pvpart" /mnt/var/cache
+             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@log /dev/"$pvpart" /mnt/var/log
+             mount -o defaults,noatime 0 0 subvol=@swap /dev/mapper/"$pvpart" /mnt/swap
+             swapon /mnt/swap
+             mkfs.fat -F32 "$bootpart"
+             mkdir /mnt/efi
+             mount "$bootpart" /mnt/efi
+         fi
     fi
 }
 bare_minimum(){
