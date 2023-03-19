@@ -166,10 +166,10 @@ part_disk(){
              mkfs.btrfs "$pvpart"
              mount "$pvpart" /mnt
              btrfs sub create /mnt/@
-             btrfs sub create /mnt/@home
-             btrfs sub create /mnt/@swap
-             btrfs sub create /mnt/@var/cache
-             btrfs sub create /mnt/@var/log
+             btrfs sub create /mnt/@/home
+             btrfs sub create /mnt/@/swap
+             btrfs sub create /mnt/@/var/cache
+             btrfs sub create /mnt/@/var/log
              btrfs filesystem mkswapfile -s "$swap_size" /mnt/swap
              umount /mnt
              mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@ "$pvpart" /mnt
