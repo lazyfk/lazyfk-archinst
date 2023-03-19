@@ -173,7 +173,7 @@ part_disk(){
              btrfs filesystem mkswapfile -s "$swap_size" /mnt/swap
              umount /mnt
              mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@ "$pvpart" /mnt
-             mkdir -p /mnt/{home,var/cache,var/log}
+             mkdir -p /mnt/{home,boot,var/cache,var/log}
              mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@home "$pvpart" /mnt/home
              mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@cache "$pvpart" /mnt/var/cache
              mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@log "$pvpart" /mnt/var/log
@@ -209,15 +209,18 @@ set_hooks(){
     PRESETS=('default' 'fallback')
 
     #default_image="/boot/initramfs-linux.img"
-    default_uki="esp/EFI/Linux/archlinux-linux.efi"
+    default_uki="/EFI/Linux/archlinux-linux.efi"
     default_options="--splash=/usr/share/systemd/bootctl/splash-arch.bmp"
 
     #fallback_image="/boot/initramfs-linux-fallback.img"
-    fallback_uki="esp/EFI/Linux/archlinux-linux-fallback.efi"
+    fallback_uki="/EFI/Linux/archlinux-linux-fallback.efi"
     fallback_options="-S autodetect"
 EOF
+}
+set_boot(){
+    mkdir -p /EFI/Linux
     install_bootloader
-arch-chroot /mnt mkinitcpio -p linux
+    arch-chroot /mnt mkinitcpio -p linux
 }
 set_locale(){
 	clear
@@ -280,6 +283,7 @@ if [ "$prompt" != "${prompt#[Yy]}" ]; then
 	set_pass
 	create_user
 	set_hooks
+    set_boot
 	start_services
 else
 	exit 0
