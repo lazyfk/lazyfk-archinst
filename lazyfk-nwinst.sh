@@ -168,6 +168,7 @@ part_disk(){
 	    pvpart="/dev/$(lsblk -o NAME -r "$sel_dev" | grep -E ""$device"p?2")"
 	    echo "provide name of this partition"
 	    read encname
+        mkfs.btrfs /dev/mapper/"$encname"
         mount /dev/mapper/"$encname" /mnt
         btrfs sub create /mnt/@
         btrfs sub create /mnt/@home
@@ -220,8 +221,8 @@ set_hooks(){
     fallback_uki="esp/EFI/Linux/archlinux-linux-fallback.efi"
     fallback_options="-S autodetect"
 EOF
-    install_bootloader()
-    arch-chroot /mnt mkinitcpio -p linux
+    install_bootloader
+arch-chroot /mnt mkinitcpio -p linux
 }
 set_locale(){
 	clear
@@ -284,7 +285,6 @@ if [ "$prompt" != "${prompt#[Yy]}" ]; then
 	set_pass
 	create_user
 	set_hooks
-	install_bootloader
 	start_services
 else
 	exit 0
