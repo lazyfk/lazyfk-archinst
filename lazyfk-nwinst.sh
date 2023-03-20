@@ -209,11 +209,11 @@ set_hooks(){
     PRESETS=('default' 'fallback')
 
     #default_image="/boot/initramfs-linux.img"
-    default_uki="/EFI/Linux/archlinux-linux.efi"
+    default_uki="efi/EFI/Linux/archlinux-linux.efi"
     default_options="--splash=/usr/share/systemd/bootctl/splash-arch.bmp"
 
     #fallback_image="/boot/initramfs-linux-fallback.img"
-    fallback_uki="/EFI/Linux/archlinux-linux-fallback.efi"
+    fallback_uki="efi/EFI/Linux/archlinux-linux-fallback.efi"
     fallback_options="-S autodetect"
 EOF
 }
