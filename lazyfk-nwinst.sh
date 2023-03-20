@@ -119,14 +119,14 @@ part_disk(){
           btrfs sub create /mnt/@/swap
           btrfs sub create /mnt/@/cache
           btrfs sub create /mnt/@/log
-          btrfs filesystem mkswapfile -s "$swap_size" /mnt/swap
+          btrfs filesystem mkswapfile -s "$swap_size" /mnt/swap chmod 600
           umount /mnt
-          mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@ /dev/mapper/"$encname" /mnt
+          mount -o defaults,noatime,autodefrag,compress=zstd,subvol=@ /dev/mapper/"$encname" /mnt
           mkdir -p /mnt/{home,var/cache,var/log}
-          mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@/home /dev/mapper/"$encname" /mnt/home
-          mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@/cache /dev/mapper/"$encname" /mnt/var/cache
-          mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@/log /dev/mapper/"$encname" /mnt/var/log
-          mount -o defaults,noatime 0 0 subvol=@/swap /dev/mapper/"$encname" /mnt/swap
+          mount -o defaults,noatime,autodefrag,compress=zstd,subvol=@/home /dev/mapper/"$encname" /mnt/home
+          mount -o defaults,noatime,autodefrag,compress=zstd,subvol=@/cache /dev/mapper/"$encname" /mnt/var/cache
+          mount -o defaults,noatime,autodefrag,compress=zstd,subvol=@/log /dev/mapper/"$encname" /mnt/var/log
+          mount -o defaults,noatime,subvol=@/swap /dev/mapper/"$encname" /mnt/swap
           swapon /mnt/swap
           mkfs.fat -F32 "$bootpart"
           mkdir /mnt/efi
@@ -170,14 +170,14 @@ part_disk(){
              btrfs sub create /mnt/@/swap
              btrfs sub create /mnt/@/cache
              btrfs sub create /mnt/@/log
-             btrfs filesystem mkswapfile -s "$swap_size" /mnt/swap
+             btrfs filesystem mkswapfile -s "$swap_size" /mnt/swap && chmod 600
              umount /mnt
-             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@ "$pvpart" /mnt
+             mount -o defaults,noatime,autodefrag,compress=zstd,subvol=@ "$pvpart" /mnt
              mkdir -p /mnt/{home,boot,var/cache,var/log}
-             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@/home "$pvpart" /mnt/home
-             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@/cache "$pvpart" /mnt/var/cache
-             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@/log "$pvpart" /mnt/var/log
-             mount -o defaults,noatime 0 0 subvol=@/swap "$pvpart" /mnt/swap
+             mount -o defaults,noatime,autodefrag,compress=zstd,subvol=@/home "$pvpart" /mnt/home
+             mount -o defaults,noatime,autodefrag,compress=zstd,subvol=@/cache "$pvpart" /mnt/var/cache
+             mount -o defaults,noatime,autodefrag,compress=zstd,subvol=@/log "$pvpart" /mnt/var/log
+             mount -o defaults,noatime,subvol=@/swap "$pvpart" /mnt/swap
              swapon /mnt/swap
              mkfs.fat -F32 "$bootpart"
              mkdir /mnt/efi
@@ -199,7 +199,8 @@ set_timezone(){
 }
 set_hooks(){
 
-	arch-chroot /mnt sed -i "s/HOOKS=.*/HOOKS=(base systemd autodetect keyboard sd-vconsole modconf block sd-encrypt lvm2 filesystems fsck)/g" /etc/mkinitcpio.conf
+    arch-chroot /mnt sed -i "s/MODULES=.*/MODULES=(btrfs)" /etc/mkinitcpio.conf
+    arch-chroot /mnt sed -i "s/HOOKS=.*/HOOKS=(base systemd autodetect keyboard sd-vconsole modconf block sd-encrypt lvm2 filesystems fsck)/g" /etc/mkinitcpio.conf
 	cat > /mnt/etc/mkinitcpio.d/linux.preset <<EOF
     # mkinitcpio preset file for the 'linux' package
 
