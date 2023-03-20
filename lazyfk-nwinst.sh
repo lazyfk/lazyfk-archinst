@@ -115,18 +115,18 @@ part_disk(){
           mkfs.btrfs /dev/mapper/"$encname"
           mount /dev/mapper/"$encname" /mnt
           btrfs sub create /mnt/@
-          btrfs sub create /mnt/@home
-          btrfs sub create /mnt/@swap
-          btrfs sub create /mnt/@var/cache
-          btrfs sub create /mnt/@var/log
+          btrfs sub create /mnt/@/home
+          btrfs sub create /mnt/@/swap
+          btrfs sub create /mnt/@/cache
+          btrfs sub create /mnt/@/log
           btrfs filesystem mkswapfile -s "$swap_size" /mnt/swap
           umount /mnt
           mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@ /dev/mapper/"$encname" /mnt
           mkdir -p /mnt/{home,var/cache,var/log}
-          mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@home /dev/mapper/"$encname" /mnt/home
-          mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@cache /dev/mapper/"$encname" /mnt/var/cache
-          mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@log /dev/mapper/"$encname" /mnt/var/log
-          mount -o defaults,noatime 0 0 subvol=@swap /dev/mapper/"$encname" /mnt/swap
+          mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@/home /dev/mapper/"$encname" /mnt/home
+          mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@/cache /dev/mapper/"$encname" /mnt/var/cache
+          mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@/log /dev/mapper/"$encname" /mnt/var/log
+          mount -o defaults,noatime 0 0 subvol=@/swap /dev/mapper/"$encname" /mnt/swap
           swapon /mnt/swap
           mkfs.fat -F32 "$bootpart"
           mkdir /mnt/efi
@@ -209,16 +209,16 @@ set_hooks(){
     PRESETS=('default' 'fallback')
 
     #default_image="/boot/initramfs-linux.img"
-    default_uki="/efi/EFI/Linux/archlinux-linux.efi"
+    default_uki="/EFI/Linux/archlinux-linux.efi"
     default_options="--splash=/usr/share/systemd/bootctl/splash-arch.bmp"
 
     #fallback_image="/boot/initramfs-linux-fallback.img"
-    fallback_uki="/efi/EFI/Linux/archlinux-linux-fallback.efi"
+    fallback_uki="/EFI/Linux/archlinux-linux-fallback.efi"
     fallback_options="-S autodetect"
 EOF
 }
 set_boot(){
-    mkdir -p /efi/Linux
+    mkdir -p /efi/EFI/Linux
     install_bootloader
     arch-chroot /mnt mkinitcpio -p linux
 }
