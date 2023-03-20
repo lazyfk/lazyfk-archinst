@@ -166,18 +166,19 @@ part_disk(){
              mkfs.btrfs "$pvpart"
              mount "$pvpart" /mnt
              btrfs sub create /mnt/@
-             btrfs sub create /mnt/@/home
-             btrfs sub create /mnt/@/swap
-             btrfs sub create /mnt/@/cache
-             btrfs sub create /mnt/@/log
-             btrfs filesystem mkswapfile -s "$swap_size" /mnt/swap && chmod 600
+             btrfs sub create /mnt/@home
+             btrfs sub create /mnt/@swap
+             btrfs sub create /mnt/@cache
+             btrfs sub create /mnt/@log
+             btrfs filesystem mkswapfile -s "$swap_size" /mnt/swap
+             chmod 600 /mnt/swap
              umount /mnt
              mount -o defaults,noatime,autodefrag,compress=zstd,subvol=@ "$pvpart" /mnt
              mkdir -p /mnt/{home,boot,var/cache,var/log}
-             mount -o defaults,noatime,autodefrag,compress=zstd,subvol=@/home "$pvpart" /mnt/home
-             mount -o defaults,noatime,autodefrag,compress=zstd,subvol=@/cache "$pvpart" /mnt/var/cache
-             mount -o defaults,noatime,autodefrag,compress=zstd,subvol=@/log "$pvpart" /mnt/var/log
-             mount -o defaults,noatime,subvol=@/swap "$pvpart" /mnt/swap
+             mount -o defaults,noatime,autodefrag,compress=zstd,subvol=@home "$pvpart" /mnt/home
+             mount -o defaults,noatime,autodefrag,compress=zstd,subvol=@cache "$pvpart" /mnt/var/cache
+             mount -o defaults,noatime,autodefrag,compress=zstd,subvol=@log "$pvpart" /mnt/var/log
+             mount -o defaults,noatime,subvol=@swap "$pvpart" /mnt/swap
              swapon /mnt/swap
              mkfs.fat -F32 "$bootpart"
              mkdir /mnt/efi
