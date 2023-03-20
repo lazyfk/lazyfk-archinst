@@ -186,7 +186,7 @@ part_disk(){
     fi
 }
 bare_minimum(){
-	pacstrap /mnt base base-devel linux $micro linux-headers linux-firmware vim networkmanager man-db lvm2 efitools sbctl
+	pacstrap /mnt base base-devel linux $micro linux-headers linux-firmware vim networkmanager man-db lvm2 efitools btrfs-progs sbctl
 }
 create_fstab(){
 	genfstab -U /mnt >> /mnt/etc/fstab
