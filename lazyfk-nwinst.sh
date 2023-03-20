@@ -198,7 +198,8 @@ set_timezone(){
 	arch-chroot /mnt hwclock --systohc
 }
 set_hooks(){
-	arch-chroot /mnt sed -i "s/HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)/HOOKS=(base systemd autodetect keyboard sd-vconsole modconf block sd-encrypt lvm2 filesystems fsck)/g" /etc/mkinitcpio.conf
+
+	arch-chroot /mnt sed -i "s/\bHOOKS=[^ ]*/HOOKS=(base systemd autodetect keyboard sd-vconsole modconf block sd-encrypt lvm2 filesystems fsck)/g" /etc/mkinitcpio.conf
 	cat > /mnt/etc/mkinitcpio.d/linux.preset <<EOF
     # mkinitcpio preset file for the 'linux' package
 
