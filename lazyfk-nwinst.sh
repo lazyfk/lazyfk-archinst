@@ -168,16 +168,16 @@ part_disk(){
              btrfs sub create /mnt/@
              btrfs sub create /mnt/@/home
              btrfs sub create /mnt/@/swap
-             btrfs sub create /mnt/@/var/cache
-             btrfs sub create /mnt/@/var/log
+             btrfs sub create /mnt/@/cache
+             btrfs sub create /mnt/@/log
              btrfs filesystem mkswapfile -s "$swap_size" /mnt/swap
              umount /mnt
              mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@ "$pvpart" /mnt
              mkdir -p /mnt/{home,boot,var/cache,var/log}
-             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@home "$pvpart" /mnt/home
-             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@cache "$pvpart" /mnt/var/cache
-             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@log "$pvpart" /mnt/var/log
-             mount -o defaults,noatime 0 0 subvol=@swap "$pvpart" /mnt/swap
+             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@/home "$pvpart" /mnt/home
+             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@/cache "$pvpart" /mnt/var/cache
+             mount -o defaults,noatime,autodefrag,compress=zstd 0 0 subvol=@/log "$pvpart" /mnt/var/log
+             mount -o defaults,noatime 0 0 subvol=@/swap "$pvpart" /mnt/swap
              swapon /mnt/swap
              mkfs.fat -F32 "$bootpart"
              mkdir /mnt/efi
@@ -209,11 +209,11 @@ set_hooks(){
     PRESETS=('default' 'fallback')
 
     #default_image="/boot/initramfs-linux.img"
-    default_uki="/efi/Linux/archlinux-linux.efi"
+    default_uki="/efi/EFI/Linux/archlinux-linux.efi"
     default_options="--splash=/usr/share/systemd/bootctl/splash-arch.bmp"
 
     #fallback_image="/boot/initramfs-linux-fallback.img"
-    fallback_uki="/efi/Linux/archlinux-linux-fallback.efi"
+    fallback_uki="/efi/EFI/Linux/archlinux-linux-fallback.efi"
     fallback_options="-S autodetect"
 EOF
 }
