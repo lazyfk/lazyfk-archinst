@@ -199,7 +199,7 @@ set_timezone(){
 }
 set_hooks(){
 
-	arch-chroot /mnt sed -i "s/\bHOOKS=[^ ]*/HOOKS=(base systemd autodetect keyboard sd-vconsole modconf block sd-encrypt lvm2 filesystems fsck)/g" /etc/mkinitcpio.conf
+	arch-chroot /mnt sed -i "s/HOOKS=.*/HOOKS=(base systemd autodetect keyboard sd-vconsole modconf block sd-encrypt lvm2 filesystems fsck)/g" /etc/mkinitcpio.conf
 	cat > /mnt/etc/mkinitcpio.d/linux.preset <<EOF
     # mkinitcpio preset file for the 'linux' package
 
@@ -231,6 +231,7 @@ set_locale(){
 	arch-chroot /mnt locale-gen
 	echo "LANG=$locale" > /mnt/etc/locale.conf
 	export LANG="$locale"
+    echo "KEYMAP=pl2" > /mnt/etc/vconsole.conf
 
 }
 set_hostname(){
